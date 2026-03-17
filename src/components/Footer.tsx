@@ -1,23 +1,34 @@
 import { Link } from "react-router-dom";
-import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import { MapPin, Phone, Mail, Instagram } from "lucide-react";
+import logo from "@/assets/payana-logo.png";
 
 export default function Footer() {
   return (
-    <footer className="bg-primary text-primary-foreground">
+    <footer className="bg-gradient-royal text-primary-foreground">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
-            <h3 className="text-xl font-bold mb-4">Payana Bookings</h3>
+            <div className="flex items-center gap-3 mb-4">
+              <img src={logo} alt="Payana Bookings" className="h-12 w-12 rounded-lg" />
+              <div>
+                <h3 className="text-xl font-bold">Payana Bookings</h3>
+                <p className="text-xs text-primary-foreground/60">Complete Travel Packages & Tourist Bus Bookings</p>
+              </div>
+            </div>
             <p className="text-primary-foreground/70 text-sm leading-relaxed mb-4">
               Your trusted travel marketplace for tour packages, vehicle rentals, and travel agency connections across India.
             </p>
             <div className="flex gap-3">
-              {[Facebook, Instagram, Twitter, Youtube].map((Icon, i) => (
-                <a key={i} href="#" className="p-2 rounded-lg bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors">
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
+              <a
+                href="https://www.instagram.com/payanabookings?igsh=ZXN1dmM5MzY3c2Zh"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2.5 rounded-xl bg-primary-foreground/10 hover:bg-primary-foreground/20 transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
             </div>
           </div>
 
@@ -67,15 +78,19 @@ export default function Footer() {
             <ul className="space-y-3 text-sm text-primary-foreground/70">
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>123 MG Road, Bangalore, Karnataka 560001</span>
+                <span>Bengaluru, Karnataka, India</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 shrink-0" />
-                <span>+91 98765 43210</span>
+                <a href="tel:9390071812" className="hover:text-primary-foreground">+91 93900 71812</a>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 shrink-0" />
-                <span>hello@payanabookings.com</span>
+                <a href="mailto:soaring.xofficial@gmail.com" className="hover:text-primary-foreground">soaring.xofficial@gmail.com</a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Instagram className="h-4 w-4 shrink-0" />
+                <a href="https://www.instagram.com/payanabookings?igsh=ZXN1dmM5MzY3c2Zh" target="_blank" rel="noopener noreferrer" className="hover:text-primary-foreground">@payanabookings</a>
               </li>
             </ul>
           </div>
