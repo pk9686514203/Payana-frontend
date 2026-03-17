@@ -1,4 +1,6 @@
-// Mock data for Payana Bookings
+import keralaImg from "@/assets/kerala-package.png";
+import ootyImg from "@/assets/ooty-package.png";
+import soaringxLogo from "@/assets/soaringx-logo.png";
 
 export interface TourPackage {
   id: string;
@@ -13,6 +15,7 @@ export interface TourPackage {
   reviews: number;
   description: string;
   itinerary: string[];
+  includes: string[];
   verified: boolean;
 }
 
@@ -41,6 +44,9 @@ export interface Agency {
   packagesCount: number;
   rating: number;
   verified: boolean;
+  phone?: string;
+  email?: string;
+  instagram?: string;
 }
 
 export interface Review {
@@ -55,32 +61,41 @@ export interface Review {
 export const mockPackages: TourPackage[] = [
   {
     id: "1",
-    name: "Coorg Coffee Trail Adventure",
-    agency: "Karnataka Travels",
+    name: "Kerala Adventure Trip",
+    agency: "SoaringX Tours & Packages",
     agencyId: "a1",
-    price: 8999,
+    price: 6499,
     duration: "3 Days / 2 Nights",
-    locations: ["Bangalore", "Coorg", "Madikeri"],
-    image: "",
-    rating: 4.8,
-    reviews: 124,
-    description: "Explore the scenic coffee plantations of Coorg with guided tours, waterfall treks, and authentic local cuisine.",
-    itinerary: ["Day 1: Bangalore to Coorg, Abbey Falls", "Day 2: Raja's Seat, Coffee Plantation Tour", "Day 3: Dubare Elephant Camp, Return"],
+    locations: ["Munnar", "Kolukkumalai", "Alleppey"],
+    image: keralaImg,
+    rating: 4.9,
+    reviews: 342,
+    description: "Experience the ultimate Kerala adventure! Explore the misty hills of Munnar, witness the breathtaking sunrise at Kolukkumalai, and cruise through the serene backwaters of Alleppey. This trip is packed with thrilling jeep rides, scenic boat cruises, and authentic Kerala cuisine.",
+    itinerary: [
+      "Day 1: Pickup from Bengaluru, drive to Munnar. Evening: Explore local markets & tea gardens",
+      "Day 2: Early morning Kolukkumalai Jeep Ride, Mattupetty Dam, Echo Point. Drive to Alleppey",
+      "Day 3: Alleppey Shikara Boat Ride, Alleppey Beach, Return journey",
+    ],
+    includes: ["Transport", "Hygienic Stay", "Food Included", "Jeep Ride", "Shikara Boat Ride"],
     verified: true,
   },
   {
     id: "2",
-    name: "Mysore Royal Heritage Tour",
-    agency: "South India Tours",
-    agencyId: "a2",
-    price: 6499,
-    duration: "2 Days / 1 Night",
-    locations: ["Bangalore", "Mysore", "Srirangapatna"],
-    image: "",
-    rating: 4.6,
-    reviews: 89,
-    description: "Visit the majestic Mysore Palace, Chamundi Hills, and the historic town of Srirangapatna.",
-    itinerary: ["Day 1: Bangalore to Mysore, Palace Visit", "Day 2: Chamundi Hills, Srirangapatna, Return"],
+    name: "Misty Ooty Escape",
+    agency: "SoaringX Tours & Packages",
+    agencyId: "a1",
+    price: 4499,
+    duration: "1 Night / 2 Days",
+    locations: ["Bengaluru", "Ooty"],
+    image: ootyImg,
+    rating: 4.8,
+    reviews: 278,
+    description: "Escape to the Queen of Hill Stations! This budget-friendly Ooty package includes everything — comfortable transport from Bengaluru, 4 meals with snacks and tea/coffee, the iconic Toy Train ride, entry tickets with boating, and a cozy 3-star hotel stay.",
+    itinerary: [
+      "Day 1: Bengaluru to Ooty, Botanical Garden, Ooty Lake Boating, Toy Train Ride, Hotel check-in",
+      "Day 2: Rose Garden, Tea Factory Visit, Doddabetta Peak, Shopping, Return to Bengaluru",
+    ],
+    includes: ["Transport", "4 Meals + Snacks + Tea/Coffee", "Toy Train Ticket", "Entry Tickets + Boating", "1 Night 3★ Hotel Stay"],
     verified: true,
   },
   {
@@ -90,42 +105,45 @@ export const mockPackages: TourPackage[] = [
     agencyId: "a3",
     price: 12999,
     duration: "4 Days / 3 Nights",
-    locations: ["Bangalore", "Goa"],
+    locations: ["Bengaluru", "Goa"],
     image: "",
     rating: 4.9,
     reviews: 256,
     description: "Sun, sand, and sea! Enjoy Goa's best beaches, nightlife, and Portuguese heritage.",
     itinerary: ["Day 1: Arrival, North Goa Beaches", "Day 2: Old Goa Churches, Spice Plantation", "Day 3: South Goa Beaches, Water Sports", "Day 4: Shopping, Departure"],
+    includes: ["Transport", "Hotel Stay", "Breakfast"],
     verified: true,
   },
   {
     id: "4",
-    name: "Ooty & Coonoor Hill Retreat",
-    agency: "Nilgiri Adventures",
-    agencyId: "a4",
-    price: 7999,
+    name: "Coorg Coffee Trail Adventure",
+    agency: "Karnataka Travels",
+    agencyId: "a2",
+    price: 8999,
     duration: "3 Days / 2 Nights",
-    locations: ["Bangalore", "Ooty", "Coonoor"],
+    locations: ["Bengaluru", "Coorg", "Madikeri"],
     image: "",
-    rating: 4.7,
-    reviews: 167,
-    description: "Escape to the Queen of Hill Stations with tea garden visits and the famous toy train ride.",
-    itinerary: ["Day 1: Drive to Ooty, Botanical Garden", "Day 2: Toy Train to Coonoor, Tea Factory", "Day 3: Ooty Lake, Return"],
-    verified: false,
+    rating: 4.8,
+    reviews: 124,
+    description: "Explore the scenic coffee plantations of Coorg with guided tours, waterfall treks, and authentic local cuisine.",
+    itinerary: ["Day 1: Bengaluru to Coorg, Abbey Falls", "Day 2: Raja's Seat, Coffee Plantation Tour", "Day 3: Dubare Elephant Camp, Return"],
+    includes: ["Transport", "Hotel Stay", "Breakfast & Dinner"],
+    verified: true,
   },
   {
     id: "5",
-    name: "Hampi Heritage Explorer",
-    agency: "Karnataka Travels",
+    name: "Chikmagalur Hill Retreat",
+    agency: "SoaringX Tours & Packages",
     agencyId: "a1",
-    price: 5999,
+    price: 5499,
     duration: "2 Days / 1 Night",
-    locations: ["Bangalore", "Hampi", "Hospet"],
+    locations: ["Bengaluru", "Chikmagalur"],
     image: "",
-    rating: 4.5,
-    reviews: 78,
-    description: "Walk through the ruins of the Vijayanagara Empire in this UNESCO World Heritage Site.",
-    itinerary: ["Day 1: Bangalore to Hampi, Temple Tours", "Day 2: Hampi Bazaar, Sunset Point, Return"],
+    rating: 4.7,
+    reviews: 189,
+    description: "Discover the coffee capital of India with stunning mountain views, trekking trails, and serene homestays.",
+    itinerary: ["Day 1: Bengaluru to Chikmagalur, Mullayanagiri Trek, Coffee Estate Visit", "Day 2: Baba Budangiri, Hebbe Falls, Return"],
+    includes: ["Transport", "Homestay", "Breakfast & Dinner"],
     verified: true,
   },
   {
@@ -141,6 +159,7 @@ export const mockPackages: TourPackage[] = [
     reviews: 312,
     description: "Experience Kerala's famous backwaters on a houseboat, lush tea gardens in Munnar, and vibrant Kochi.",
     itinerary: ["Day 1: Kochi Fort, Chinese Nets", "Day 2: Drive to Munnar", "Day 3: Tea Plantations, Mattupetty Dam", "Day 4: Alleppey Houseboat", "Day 5: Departure"],
+    includes: ["Transport", "Hotel + Houseboat Stay", "All Meals"],
     verified: true,
   },
 ];
@@ -152,9 +171,9 @@ export const mockVehicles: Vehicle[] = [
     type: "SUV",
     seats: 7,
     pricePerKm: 16,
-    owner: "Rajesh Kumar",
-    ownerId: "o1",
-    location: "Bangalore",
+    owner: "SoaringX Tours & Packages",
+    ownerId: "a1",
+    location: "Bengaluru",
     image: "",
     rating: 4.8,
     verified: true,
@@ -166,9 +185,9 @@ export const mockVehicles: Vehicle[] = [
     type: "Tempo Traveller",
     seats: 12,
     pricePerKm: 22,
-    owner: "Suresh Travels",
-    ownerId: "o2",
-    location: "Bangalore",
+    owner: "SoaringX Tours & Packages",
+    ownerId: "a1",
+    location: "Bengaluru",
     image: "",
     rating: 4.6,
     verified: true,
@@ -196,7 +215,7 @@ export const mockVehicles: Vehicle[] = [
     pricePerKm: 12,
     owner: "Anand Cabs",
     ownerId: "o4",
-    location: "Mysore",
+    location: "Mysuru",
     image: "",
     rating: 4.5,
     verified: true,
@@ -224,7 +243,7 @@ export const mockVehicles: Vehicle[] = [
     pricePerKm: 28,
     owner: "Horizon Travels",
     ownerId: "o6",
-    location: "Bangalore",
+    location: "Bengaluru",
     image: "",
     rating: 4.9,
     verified: true,
@@ -235,24 +254,27 @@ export const mockVehicles: Vehicle[] = [
 export const mockAgencies: Agency[] = [
   {
     id: "a1",
+    name: "SoaringX Tours & Packages",
+    owner: "SoaringX Team",
+    location: "Bengaluru",
+    description: "Pack Your Bags. We Handle the Rest. Premium tour packages covering Kerala, Ooty, Coorg, Goa, and more. Trusted by 5000+ happy travelers.",
+    logo: soaringxLogo,
+    packagesCount: 15,
+    rating: 4.9,
+    verified: true,
+    phone: "9390071812",
+    email: "soaring.xofficial@gmail.com",
+    instagram: "https://www.instagram.com/soaringx.tour",
+  },
+  {
+    id: "a2",
     name: "Karnataka Travels",
     owner: "Prakash Rao",
-    location: "Bangalore",
+    location: "Bengaluru",
     description: "Premier travel agency specializing in Karnataka tourism with 15+ years of experience.",
     logo: "",
     packagesCount: 12,
     rating: 4.8,
-    verified: true,
-  },
-  {
-    id: "a2",
-    name: "South India Tours",
-    owner: "Meera Nair",
-    location: "Chennai",
-    description: "Comprehensive South Indian travel solutions covering all major destinations.",
-    logo: "",
-    packagesCount: 18,
-    rating: 4.6,
     verified: true,
   },
   {
@@ -293,39 +315,49 @@ export const mockAgencies: Agency[] = [
 export const mockReviews: Review[] = [
   {
     id: "r1",
-    name: "Priya Sharma",
-    avatar: "PS",
+    name: "Rahul Menon",
+    avatar: "RM",
     rating: 5,
-    text: "Amazing Coorg trip organized by Karnataka Travels! Everything was perfectly planned. The coffee plantation visit was the highlight.",
-    trip: "Coorg Coffee Trail",
+    text: "Incredible Kerala trip with SoaringX! The Kolukkumalai sunrise was unforgettable. Everything was perfectly organized — transport, food, stay. Best ₹6499 I ever spent!",
+    trip: "Kerala Adventure Trip",
   },
   {
     id: "r2",
-    name: "Amit Patel",
-    avatar: "AP",
+    name: "Priya Sharma",
+    avatar: "PS",
     rating: 5,
-    text: "Booked a Tempo Traveller for our family trip. Clean vehicle, polite driver, and great service. Will definitely book again!",
-    trip: "Bangalore to Goa",
+    text: "Booked the Ooty package for my family. The toy train ride was magical! Kids loved it. Great food, comfortable hotel. Highly recommend SoaringX!",
+    trip: "Misty Ooty Escape",
   },
   {
     id: "r3",
-    name: "Sneha Reddy",
-    avatar: "SR",
-    rating: 4,
-    text: "Kerala backwaters houseboat experience was magical. The food was incredible. Highly recommend God's Own Tours.",
-    trip: "Kerala Backwaters",
+    name: "Amit Patel",
+    avatar: "AP",
+    rating: 5,
+    text: "Booked a Tempo Traveller for our college trip. Clean vehicle, polite driver, and great service. Will definitely book again through Payana!",
+    trip: "Bengaluru to Goa",
   },
   {
     id: "r4",
-    name: "Karthik Nair",
-    avatar: "KN",
+    name: "Sneha Reddy",
+    avatar: "SR",
     rating: 5,
-    text: "The trip request feature is genius! Got 4 quotes in 2 hours and chose the best deal. Saved so much time and money.",
-    trip: "Mysore Heritage Tour",
+    text: "The trip request feature is genius! Got 4 quotes in 2 hours and chose the best deal. Saved so much time and money. Love this platform!",
+    trip: "Coorg Weekend Trip",
   },
 ];
 
+export const pickupCities = [
+  "Bengaluru", "Mysuru", "Chennai", "Hyderabad", "Hubli", "Mangalore",
+  "Coimbatore", "Kochi", "Vijayawada", "Pune",
+];
+
+export const destinations = [
+  "Ooty", "Coorg", "Kerala", "Goa", "Chikmagalur",
+  "Munnar", "Alleppey", "Wayanad", "Hampi", "Pondicherry",
+];
+
 export const popularLocations = [
-  "Bangalore", "Mysore", "Coorg", "Goa", "Ooty", "Hampi",
+  "Bengaluru", "Mysuru", "Coorg", "Goa", "Ooty", "Hampi",
   "Kochi", "Munnar", "Alleppey", "Chennai", "Pondicherry", "Wayanad",
 ];
