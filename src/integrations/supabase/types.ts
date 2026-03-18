@@ -14,16 +14,338 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agents: {
+        Row: {
+          address: string | null
+          agency_name: string
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          instagram: string | null
+          is_verified: boolean
+          logo_url: string | null
+          owner_name: string
+          phone: string
+          status: Database["public"]["Enums"]["approval_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          agency_name: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          instagram?: string | null
+          is_verified?: boolean
+          logo_url?: string | null
+          owner_name: string
+          phone: string
+          status?: Database["public"]["Enums"]["approval_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          agency_name?: string
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          instagram?: string | null
+          is_verified?: boolean
+          logo_url?: string | null
+          owner_name?: string
+          phone?: string
+          status?: Database["public"]["Enums"]["approval_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          booking_id: string
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          id: string
+          message: string | null
+          package_id: string | null
+          passengers: number
+          pickup_location: string | null
+          status: Database["public"]["Enums"]["booking_status"]
+          travel_date: string
+          updated_at: string
+          user_id: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          booking_id: string
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          id?: string
+          message?: string | null
+          package_id?: string | null
+          passengers?: number
+          pickup_location?: string | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          travel_date: string
+          updated_at?: string
+          user_id: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          booking_id?: string
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          message?: string | null
+          package_id?: string | null
+          passengers?: number
+          pickup_location?: string | null
+          status?: Database["public"]["Enums"]["booking_status"]
+          travel_date?: string
+          updated_at?: string
+          user_id?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packages: {
+        Row: {
+          agent_id: string
+          created_at: string
+          description: string | null
+          duration: string
+          id: string
+          images: string[] | null
+          includes: string[] | null
+          itinerary: Json | null
+          locations: string[]
+          price: number
+          status: Database["public"]["Enums"]["approval_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          description?: string | null
+          duration: string
+          id?: string
+          images?: string[] | null
+          includes?: string[] | null
+          itinerary?: Json | null
+          locations?: string[]
+          price: number
+          status?: Database["public"]["Enums"]["approval_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          description?: string | null
+          duration?: string
+          id?: string
+          images?: string[] | null
+          includes?: string[] | null
+          itinerary?: Json | null
+          locations?: string[]
+          price?: number
+          status?: Database["public"]["Enums"]["approval_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "packages_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vehicle_owners: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_verified: boolean
+          owner_name: string
+          phone: string
+          status: Database["public"]["Enums"]["approval_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_verified?: boolean
+          owner_name: string
+          phone: string
+          status?: Database["public"]["Enums"]["approval_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_verified?: boolean
+          owner_name?: string
+          phone?: string
+          status?: Database["public"]["Enums"]["approval_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          contact_phone: string | null
+          created_at: string
+          id: string
+          images: string[] | null
+          location: string
+          owner_id: string
+          price_per_km: number
+          seats: number
+          status: Database["public"]["Enums"]["approval_status"]
+          updated_at: string
+          vehicle_name: string
+          vehicle_type: string
+        }
+        Insert: {
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          location: string
+          owner_id: string
+          price_per_km: number
+          seats: number
+          status?: Database["public"]["Enums"]["approval_status"]
+          updated_at?: string
+          vehicle_name: string
+          vehicle_type: string
+        }
+        Update: {
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          location?: string
+          owner_id?: string
+          price_per_km?: number
+          seats?: number
+          status?: Database["public"]["Enums"]["approval_status"]
+          updated_at?: string
+          vehicle_name?: string
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehicles_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "vehicle_owners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_agent_owner: { Args: { _agent_id: string }; Returns: boolean }
+      is_vehicle_owner: { Args: { _owner_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "customer" | "agent" | "vehicle_owner"
+      approval_status: "pending" | "approved" | "rejected"
+      booking_status: "pending" | "confirmed" | "cancelled" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +472,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "customer", "agent", "vehicle_owner"],
+      approval_status: ["pending", "approved", "rejected"],
+      booking_status: ["pending", "confirmed", "cancelled", "completed"],
+    },
   },
 } as const
