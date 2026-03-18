@@ -98,7 +98,7 @@ export default function VehicleDetailPage() {
       </div>
 
       {showBooking && (
-        <BookingModal type="vehicle" itemName={vehicle.name} onClose={() => setShowBooking(false)} />
+        <BookingModal type="vehicle" itemName={vehicle.name} itemId={vehicle.id} onClose={() => setShowBooking(false)} />
       )}
     </Layout>
   );

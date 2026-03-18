@@ -153,7 +153,7 @@ export default function PackageDetailPage() {
       </div>
 
       {showBooking && (
-        <BookingModal type="package" itemName={pkg.name} onClose={() => setShowBooking(false)} />
+        <BookingModal type="package" itemName={pkg.name} itemId={pkg.id} onClose={() => setShowBooking(false)} />
       )}
     </Layout>
   );
