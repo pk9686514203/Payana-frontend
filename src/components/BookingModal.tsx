@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { QRCodeSVG } from "qrcode.react";
 import SmartSearchInput from "./SmartSearchInput";
-import { pickupCities } from "@/data/mockData";
+const pickupCities = ["Bengaluru", "Mysuru", "Chennai", "Hyderabad", "Hubli", "Mangalore", "Coimbatore", "Kochi"];
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
