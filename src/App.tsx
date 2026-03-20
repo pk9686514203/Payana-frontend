@@ -39,6 +39,7 @@ const App = () => (
             <Route path="/agencies/:id" element={<AgencyDetailPage />} />
             <Route path="/trip-request" element={<TripRequestPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<LoginPage />} />
             <Route path="/my-bookings" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
             <Route path="/agent-dashboard" element={<ProtectedRoute requiredRole="agent"><AgentDashboard /></ProtectedRoute>} />
