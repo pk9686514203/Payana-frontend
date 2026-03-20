@@ -4,7 +4,7 @@ import { MapPin, Calendar, Users, Send, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { toast } from "sonner";
-import { popularLocations } from "@/data/mockData";
+const popularLocations = ["Bengaluru", "Mysuru", "Coorg", "Goa", "Ooty", "Hampi", "Kochi", "Munnar", "Alleppey", "Chennai", "Pondicherry", "Wayanad"];
 
 export default function TripRequestPage() {
   const [form, setForm] = useState({

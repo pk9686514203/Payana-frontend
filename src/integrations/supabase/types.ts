@@ -29,7 +29,7 @@ export type Database = {
           phone: string
           status: Database["public"]["Enums"]["approval_status"]
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           address?: string | null
@@ -45,7 +45,7 @@ export type Database = {
           phone: string
           status?: Database["public"]["Enums"]["approval_status"]
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           address?: string | null
@@ -61,7 +61,7 @@ export type Database = {
           phone?: string
           status?: Database["public"]["Enums"]["approval_status"]
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -246,7 +246,7 @@ export type Database = {
           phone: string
           status: Database["public"]["Enums"]["approval_status"]
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           address?: string | null
@@ -258,7 +258,7 @@ export type Database = {
           phone: string
           status?: Database["public"]["Enums"]["approval_status"]
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           address?: string | null
@@ -270,7 +270,7 @@ export type Database = {
           phone?: string
           status?: Database["public"]["Enums"]["approval_status"]
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
