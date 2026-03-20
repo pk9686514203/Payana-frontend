@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, MapPin, Star, CheckCircle, Package, Phone, Instagram } from "lucide-react";
+import { Search, MapPin, CheckCircle, Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
-import { mockAgencies } from "@/data/mockData";
+import { useApprovedAgencies } from "@/hooks/useAgencies";
 
 export default function AgenciesPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const { data: agencies, isLoading } = useApprovedAgencies();
 
-  const filtered = mockAgencies.filter(
+  const filtered = (agencies || []).filter(
     (a) =>
-      a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.location.toLowerCase().includes(searchTerm.toLowerCase())
+      a.agency_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (a.address || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -23,18 +24,14 @@ export default function AgenciesPage() {
           <p className="text-primary-foreground/70">Connect with verified travel professionals</p>
           <div className="mt-6 relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search agencies or locations..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
-            />
+            <input type="text" placeholder="Search agencies or locations..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-xl bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-secondary" />
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-10">
+        {isLoading && <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}
         <p className="text-sm text-muted-foreground mb-6">{filtered.length} agencies found</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((agency, i) => (
@@ -42,33 +39,24 @@ export default function AgenciesPage() {
               <Link to={`/agencies/${agency.id}`} className="group block">
                 <div className="bg-card rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6 border border-border/50">
                   <div className="flex items-center gap-4 mb-4">
-                    {agency.logo ? (
-                      <img src={agency.logo} alt={agency.name} className="w-14 h-14 rounded-xl object-cover shadow-sm shrink-0" />
+                    {agency.logo_url ? (
+                      <img src={agency.logo_url} alt={agency.agency_name} className="w-14 h-14 rounded-xl object-cover shadow-sm shrink-0" />
                     ) : (
                       <div className="w-14 h-14 rounded-xl bg-gradient-hero flex items-center justify-center text-primary-foreground font-bold text-lg shrink-0">
-                        {agency.name.charAt(0)}
+                        {agency.agency_name.charAt(0)}
                       </div>
                     )}
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-foreground group-hover:text-secondary transition-colors truncate">{agency.name}</h3>
-                        {agency.verified && <CheckCircle className="h-4 w-4 text-accent shrink-0" />}
+                        <h3 className="font-bold text-foreground group-hover:text-secondary transition-colors truncate">{agency.agency_name}</h3>
+                        {agency.is_verified && <CheckCircle className="h-4 w-4 text-accent shrink-0" />}
                       </div>
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
-                        <MapPin className="h-3 w-3" /> {agency.location}
+                        <MapPin className="h-3 w-3" /> {agency.address || "India"}
                       </p>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{agency.description}</p>
-                  <div className="flex items-center justify-between pt-3 border-t border-border">
-                    <div className="flex items-center gap-1">
-                      <Star className="h-3.5 w-3.5 fill-orange text-orange" />
-                      <span className="text-sm font-semibold text-foreground">{agency.rating}</span>
-                    </div>
-                    <span className="text-xs text-secondary font-semibold flex items-center gap-1">
-                      <Package className="h-3 w-3" /> {agency.packagesCount} packages
-                    </span>
-                  </div>
                 </div>
               </Link>
             </motion.div>

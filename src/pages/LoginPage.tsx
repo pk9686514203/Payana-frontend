@@ -1,56 +1,45 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Phone, ArrowRight, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { signInWithOtp, verifyOtp } = useAuth();
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [step, setStep] = useState<"phone" | "otp">("phone");
+  const { signIn, signUp } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleaned = phone.replace(/\s/g, "");
-    if (!cleaned || cleaned.length < 10) {
-      toast.error("Please enter a valid phone number");
+    if (!email || !password) {
+      toast.error("Please fill all fields");
       return;
     }
-    const fullPhone = cleaned.startsWith("+") ? cleaned : `+91${cleaned}`;
+    if (isSignUp && !fullName) {
+      toast.error("Please enter your name");
+      return;
+    }
     setLoading(true);
-    const { error } = await signInWithOtp(fullPhone);
-    setLoading(false);
-    if (error) {
-      toast.error(error.message || "Failed to send OTP");
-      return;
+    if (isSignUp) {
+      const { error } = await signUp(email, password, fullName);
+      setLoading(false);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Account created successfully!");
+      navigate("/");
+    } else {
+      const { error } = await signIn(email, password);
+      setLoading(false);
+      if (error) { toast.error(error.message); return; }
+      toast.success("Logged in successfully!");
+      navigate("/");
     }
-    toast.success("OTP sent to your phone!");
-    setStep("otp");
-  };
-
-  const handleVerifyOtp = async () => {
-    if (otp.length < 6) {
-      toast.error("Please enter the 6-digit OTP");
-      return;
-    }
-    const cleaned = phone.replace(/\s/g, "");
-    const fullPhone = cleaned.startsWith("+") ? cleaned : `+91${cleaned}`;
-    setLoading(true);
-    const { error } = await verifyOtp(fullPhone, otp);
-    setLoading(false);
-    if (error) {
-      toast.error(error.message || "Invalid OTP");
-      return;
-    }
-    toast.success("Logged in successfully!");
-    navigate("/");
   };
 
   return (
@@ -59,73 +48,77 @@ export default function LoginPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm">
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl bg-gradient-hero flex items-center justify-center mx-auto mb-4">
-              <Phone className="h-7 w-7 text-primary-foreground" />
+              <Mail className="h-7 w-7 text-primary-foreground" />
             </div>
             <h1 className="text-2xl font-bold text-foreground">
-              {step === "phone" ? "Login / Sign Up" : "Verify OTP"}
+              {isSignUp ? "Create Account" : "Welcome Back"}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {step === "phone"
-                ? "Enter your phone number to continue"
-                : `We sent a code to +91 ${phone}`}
+              {isSignUp ? "Sign up to start booking trips" : "Login to your account"}
             </p>
           </div>
 
-          <div className="bg-card rounded-2xl p-6 shadow-card">
-            {step === "phone" ? (
-              <form onSubmit={handleSendOtp} className="space-y-4">
+          <div className="bg-card rounded-2xl p-6 shadow-card border border-border/50">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {isSignUp && (
                 <div>
-                  <label className="text-sm font-medium text-foreground mb-1 block">Phone Number</label>
-                  <div className="flex gap-2">
-                    <div className="flex items-center px-3 bg-muted rounded-xl border border-input text-sm font-medium text-muted-foreground">
-                      +91
-                    </div>
+                  <label className="text-sm font-medium text-foreground mb-1 block">Full Name</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <input
-                      type="tel"
-                      placeholder="98765 43210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="flex-1 px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
-                      maxLength={15}
+                      type="text"
+                      placeholder="John Doe"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
                     />
                   </div>
                 </div>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-hero text-primary-foreground hover:opacity-90 rounded-xl py-5 font-semibold"
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowRight className="h-4 w-4 mr-2" />}
-                  Send OTP
-                </Button>
-              </form>
-            ) : (
-              <div className="space-y-5">
-                <div className="flex justify-center">
-                  <InputOTP maxLength={6} value={otp} onChange={setOtp}>
-                    <InputOTPGroup>
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <InputOTPSlot key={i} index={i} />
-                      ))}
-                    </InputOTPGroup>
-                  </InputOTP>
+              )}
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
+                  />
                 </div>
-                <Button
-                  onClick={handleVerifyOtp}
-                  disabled={loading}
-                  className="w-full bg-gradient-hero text-primary-foreground hover:opacity-90 rounded-xl py-5 font-semibold"
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                  Verify & Login
-                </Button>
-                <button
-                  onClick={() => { setStep("phone"); setOtp(""); }}
-                  className="w-full text-sm text-secondary font-medium hover:underline"
-                >
-                  Change phone number
-                </button>
               </div>
-            )}
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1 block">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
+                    minLength={6}
+                  />
+                </div>
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-hero text-primary-foreground hover:opacity-90 rounded-xl py-5 font-semibold"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowRight className="h-4 w-4 mr-2" />}
+                {isSignUp ? "Create Account" : "Login"}
+              </Button>
+            </form>
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-secondary font-medium hover:underline"
+              >
+                {isSignUp ? "Already have an account? Login" : "Don't have an account? Sign Up"}
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>

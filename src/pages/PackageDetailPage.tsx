@@ -1,17 +1,20 @@
 import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Star, CheckCircle, Clock, ArrowLeft, Phone, Mail, Instagram, Package } from "lucide-react";
+import { MapPin, Star, CheckCircle, Clock, ArrowLeft, Phone, Mail, Instagram, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import BookingModal from "@/components/BookingModal";
-import { mockPackages, mockAgencies } from "@/data/mockData";
+import { usePackageById } from "@/hooks/usePackages";
 
 export default function PackageDetailPage() {
   const { id } = useParams();
-  const pkg = mockPackages.find((p) => p.id === id);
-  const agency = pkg ? mockAgencies.find((a) => a.id === pkg.agencyId) : null;
+  const { data: pkg, isLoading } = usePackageById(id || "");
   const [showBooking, setShowBooking] = useState(false);
+
+  if (isLoading) {
+    return <Layout><div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></Layout>;
+  }
 
   if (!pkg) {
     return (
@@ -24,6 +27,8 @@ export default function PackageDetailPage() {
     );
   }
 
+  const itinerary = Array.isArray(pkg.itinerary) ? (pkg.itinerary as string[]) : [];
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
@@ -32,21 +37,14 @@ export default function PackageDetailPage() {
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Image */}
             <div className="relative h-64 md:h-[28rem] bg-muted rounded-2xl overflow-hidden shadow-card">
-              {pkg.image ? (
-                <img src={pkg.image} alt={pkg.name} className="w-full h-full object-cover" />
+              {pkg.images?.[0] ? (
+                <img src={pkg.images[0]} alt={pkg.title} className="w-full h-full object-cover" />
               ) : (
-                <>
-                  <div className="absolute inset-0 bg-gradient-sky opacity-50" />
-                  <div className="absolute inset-0 flex items-center justify-center text-primary-foreground/50">
-                    <MapPin className="h-16 w-16" />
-                  </div>
-                </>
+                <div className="absolute inset-0 bg-gradient-sky opacity-50 flex items-center justify-center"><MapPin className="h-16 w-16 text-primary-foreground/50" /></div>
               )}
-              {pkg.verified && (
+              {pkg.agents?.is_verified && (
                 <div className="absolute top-4 left-4 flex items-center gap-1 bg-accent text-accent-foreground px-3 py-1.5 rounded-lg text-sm font-semibold shadow-sm">
                   <CheckCircle className="h-4 w-4" /> Verified Agency
                 </div>
@@ -54,11 +52,10 @@ export default function PackageDetailPage() {
             </div>
 
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">{pkg.name}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">{pkg.title}</h1>
               <div className="flex flex-wrap items-center gap-4 mt-2 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1"><Star className="h-4 w-4 fill-orange text-orange" /> {pkg.rating} ({pkg.reviews} reviews)</span>
                 <span className="flex items-center gap-1"><Clock className="h-4 w-4" /> {pkg.duration}</span>
-                <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {pkg.locations.join(" → ")}</span>
+                <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {pkg.locations?.join(" → ")}</span>
               </div>
             </motion.div>
 
@@ -67,7 +64,6 @@ export default function PackageDetailPage() {
               <p className="text-muted-foreground leading-relaxed">{pkg.description}</p>
             </div>
 
-            {/* Includes */}
             {pkg.includes && pkg.includes.length > 0 && (
               <div>
                 <h2 className="text-lg font-semibold text-foreground mb-3">What's Included</h2>
@@ -81,23 +77,24 @@ export default function PackageDetailPage() {
               </div>
             )}
 
-            <div>
-              <h2 className="text-lg font-semibold text-foreground mb-3">Itinerary</h2>
-              <div className="space-y-3">
-                {pkg.itinerary.map((item, i) => (
-                  <div key={i} className="flex gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className="w-8 h-8 rounded-full bg-gradient-warm flex items-center justify-center text-primary-foreground text-xs font-bold shadow-sm">{i + 1}</div>
-                      {i < pkg.itinerary.length - 1 && <div className="w-0.5 flex-1 bg-border mt-1" />}
+            {itinerary.length > 0 && (
+              <div>
+                <h2 className="text-lg font-semibold text-foreground mb-3">Itinerary</h2>
+                <div className="space-y-3">
+                  {itinerary.map((item, i) => (
+                    <div key={i} className="flex gap-3">
+                      <div className="flex flex-col items-center">
+                        <div className="w-8 h-8 rounded-full bg-gradient-warm flex items-center justify-center text-primary-foreground text-xs font-bold shadow-sm">{i + 1}</div>
+                        {i < itinerary.length - 1 && <div className="w-0.5 flex-1 bg-border mt-1" />}
+                      </div>
+                      <p className="text-sm text-muted-foreground pt-1.5 leading-relaxed">{String(item)}</p>
                     </div>
-                    <p className="text-sm text-muted-foreground pt-1.5 leading-relaxed">{item}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Sidebar */}
           <div>
             <div className="bg-card rounded-2xl p-6 shadow-card sticky top-24 space-y-5 border border-border/50">
               <div className="text-center">
@@ -109,43 +106,40 @@ export default function PackageDetailPage() {
                 Book Now
               </Button>
 
-              {/* Agency info */}
               <div className="border-t border-border pt-5">
                 <h3 className="font-semibold text-sm text-foreground mb-3">Organized by</h3>
                 <div className="flex items-center gap-3 mb-4">
-                  {agency?.logo ? (
-                    <img src={agency.logo} alt={agency.name} className="w-12 h-12 rounded-xl object-cover shadow-sm" />
+                  {pkg.agents?.logo_url ? (
+                    <img src={pkg.agents.logo_url} alt={pkg.agents.agency_name} className="w-12 h-12 rounded-xl object-cover shadow-sm" />
                   ) : (
                     <div className="w-12 h-12 rounded-xl bg-gradient-hero flex items-center justify-center text-primary-foreground font-bold text-sm">
-                      {pkg.agency.charAt(0)}
+                      {pkg.agents?.agency_name?.charAt(0)}
                     </div>
                   )}
                   <div>
-                    <p className="font-semibold text-sm text-foreground">{pkg.agency}</p>
-                    {pkg.verified && (
+                    <p className="font-semibold text-sm text-foreground">{pkg.agents?.agency_name}</p>
+                    {pkg.agents?.is_verified && (
                       <p className="text-xs text-accent flex items-center gap-1"><CheckCircle className="h-3 w-3" /> Verified</p>
                     )}
                   </div>
                 </div>
-                {agency && (
-                  <div className="space-y-2 text-sm">
-                    {agency.phone && (
-                      <a href={`tel:${agency.phone}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                        <Phone className="h-4 w-4 text-secondary" /> +91 {agency.phone}
-                      </a>
-                    )}
-                    {agency.email && (
-                      <a href={`mailto:${agency.email}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                        <Mail className="h-4 w-4 text-secondary" /> {agency.email}
-                      </a>
-                    )}
-                    {agency.instagram && (
-                      <a href={agency.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                        <Instagram className="h-4 w-4 text-orange" /> Follow on Instagram
-                      </a>
-                    )}
-                  </div>
-                )}
+                <div className="space-y-2 text-sm">
+                  {pkg.agents?.phone && (
+                    <a href={`tel:${pkg.agents.phone}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                      <Phone className="h-4 w-4 text-secondary" /> {pkg.agents.phone}
+                    </a>
+                  )}
+                  {pkg.agents?.email && (
+                    <a href={`mailto:${pkg.agents.email}`} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                      <Mail className="h-4 w-4 text-secondary" /> {pkg.agents.email}
+                    </a>
+                  )}
+                  {pkg.agents?.instagram && (
+                    <a href={pkg.agents.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                      <Instagram className="h-4 w-4 text-orange" /> Follow on Instagram
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -153,7 +147,7 @@ export default function PackageDetailPage() {
       </div>
 
       {showBooking && (
-        <BookingModal type="package" itemName={pkg.name} itemId={pkg.id} onClose={() => setShowBooking(false)} />
+        <BookingModal type="package" itemName={pkg.title} itemId={pkg.id} onClose={() => setShowBooking(false)} />
       )}
     </Layout>
   );

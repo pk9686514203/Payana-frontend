@@ -11,8 +11,8 @@ interface AuthContextType {
   profile: { full_name: string | null; phone: string | null; avatar_url: string | null } | null;
   roles: AppRole[];
   loading: boolean;
-  signInWithOtp: (phone: string) => Promise<{ error: Error | null }>;
-  verifyOtp: (phone: string, token: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
 }
@@ -64,13 +64,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (data) setRoles(data.map((r) => r.role));
   }
 
-  const signInWithOtp = async (phone: string) => {
-    const { error } = await supabase.auth.signInWithOtp({ phone });
-    return { error: error as Error | null };
+  const signUp = async (email: string, password: string, fullName: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } },
+    });
+    if (error) return { error: error as Error };
+    // Update profile with full_name
+    if (data.user) {
+      await supabase.from("profiles").update({ full_name: fullName }).eq("id", data.user.id);
+    }
+    return { error: null };
   };
 
-  const verifyOtp = async (phone: string, token: string) => {
-    const { error } = await supabase.auth.verifyOtp({ phone, token, type: "sms" });
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error as Error | null };
   };
 
@@ -85,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const hasRole = (role: AppRole) => roles.includes(role);
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, roles, loading, signInWithOtp, verifyOtp, signOut, hasRole }}>
+    <AuthContext.Provider value={{ session, user, profile, roles, loading, signUp, signIn, signOut, hasRole }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Search, Users, CheckCircle, MapPin, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search, Users, CheckCircle, MapPin, Loader2 } from "lucide-react";
 import Layout from "@/components/Layout";
-import { mockVehicles } from "@/data/mockData";
+import { useApprovedVehicles } from "@/hooks/useVehicles";
 
 const vehicleTypes = ["All", "SUV", "Sedan", "Tempo Traveller", "Mini Bus", "Tourist Bus"];
 
 export default function VehiclesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeType, setActiveType] = useState("All");
+  const { data: vehicles, isLoading } = useApprovedVehicles();
 
-  const filtered = mockVehicles.filter((v) => {
-    const matchSearch = v.name.toLowerCase().includes(searchTerm.toLowerCase()) || v.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchType = activeType === "All" || v.type === activeType;
+  const filtered = (vehicles || []).filter((v) => {
+    const matchSearch = v.vehicle_name.toLowerCase().includes(searchTerm.toLowerCase()) || v.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchType = activeType === "All" || v.vehicle_type === activeType;
     return matchSearch && matchType;
   });
 
@@ -26,33 +26,23 @@ export default function VehiclesPage() {
           <p className="text-primary-foreground/70">Rent reliable vehicles for your trips</p>
           <div className="mt-6 relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search vehicles or locations..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
-            />
+            <input type="text" placeholder="Search vehicles or locations..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-xl bg-card text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-secondary" />
           </div>
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Type Filter */}
         <div className="flex flex-wrap gap-2 mb-8">
           {vehicleTypes.map((type) => (
-            <button
-              key={type}
-              onClick={() => setActiveType(type)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                activeType === type ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
+            <button key={type} onClick={() => setActiveType(type)}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${activeType === type ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}>
               {type}
             </button>
           ))}
         </div>
 
+        {isLoading && <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>}
         <p className="text-sm text-muted-foreground mb-6">{filtered.length} vehicles found</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -61,35 +51,22 @@ export default function VehiclesPage() {
               <Link to={`/vehicles/${v.id}`} className="group block">
                 <div className="bg-card rounded-xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300">
                   <div className="relative h-44 bg-muted">
-                    <div className="absolute inset-0 bg-gradient-hero opacity-30" />
-                    <div className="absolute inset-0 flex items-center justify-center text-primary-foreground/40">
-                      <Users className="h-12 w-12" />
-                    </div>
-                    {v.verified && (
+                    <div className="absolute inset-0 bg-gradient-hero opacity-30 flex items-center justify-center"><Users className="h-12 w-12 text-primary-foreground/40" /></div>
+                    {v.vehicle_owners?.is_verified && (
                       <div className="absolute top-3 left-3 flex items-center gap-1 bg-accent text-accent-foreground px-2 py-1 rounded-md text-xs font-medium">
                         <CheckCircle className="h-3 w-3" /> Verified
                       </div>
                     )}
-                    <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-medium text-foreground">
-                      {v.type}
-                    </div>
+                    <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-medium text-foreground">{v.vehicle_type}</div>
                   </div>
                   <div className="p-5">
-                    <h3 className="font-semibold text-foreground group-hover:text-secondary transition-colors">{v.name}</h3>
+                    <h3 className="font-semibold text-foreground group-hover:text-secondary transition-colors">{v.vehicle_name}</h3>
                     <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                      <MapPin className="h-3 w-3" /> {v.owner} • {v.location}
+                      <MapPin className="h-3 w-3" /> {v.vehicle_owners?.owner_name} • {v.location}
                     </p>
-                    <div className="flex flex-wrap gap-1.5 mt-3">
-                      {v.features.slice(0, 3).map((f) => (
-                        <span key={f} className="text-xs bg-muted px-2 py-0.5 rounded-md text-muted-foreground">{f}</span>
-                      ))}
-                    </div>
                     <div className="flex items-center justify-between mt-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xs text-muted-foreground">{v.seats} seats</span>
-                        <span className="flex items-center gap-0.5"><Star className="h-3 w-3 fill-orange text-orange" /><span className="text-xs font-medium">{v.rating}</span></span>
-                      </div>
-                      <span className="text-base font-bold text-foreground">₹{v.pricePerKm}/km</span>
+                      <span className="text-xs text-muted-foreground">{v.seats} seats</span>
+                      <span className="text-base font-bold text-foreground">₹{v.price_per_km}/km</span>
                     </div>
                   </div>
                 </div>
