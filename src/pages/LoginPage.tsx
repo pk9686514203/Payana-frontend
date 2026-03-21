@@ -34,9 +34,12 @@ export default function LoginPage() {
       toast.success("Account created successfully!");
       navigate("/");
     } else {
-      const { error } = await signIn(email, password);
+      const { error, user } = await signIn(email, password);
       setLoading(false);
       if (error) { toast.error(error.message); return; }
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+      }
       toast.success("Logged in successfully!");
       navigate("/");
     }

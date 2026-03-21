@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Menu, X, User, Instagram, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import logo from "@/assets/payana-logo.png";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -39,7 +38,7 @@ export default function Header() {
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-md border-b border-border shadow-sm">
         <div className="container mx-auto flex items-center justify-between h-16 px-4">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="Payana Bookings" className="h-11 w-11 object-contain rounded-lg" />
+            <img src="/payana-logo.png" alt="Payana Bookings" onError={(e) => { e.currentTarget.src = "/placeholder.png"; }} className="h-11 w-11 object-contain rounded-lg" />
             <span className="font-display font-bold text-xl hidden sm:inline">
               <span className="text-gradient-hero">Payana</span>{" "}
               <span className="text-gradient-warm">Bookings</span>

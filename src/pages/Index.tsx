@@ -103,8 +103,8 @@ export default function Index() {
                 <Link to={`/packages/${pkg.id}`} className="group block">
                   <div className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 border border-border/50">
                     <div className="relative h-52 bg-muted overflow-hidden">
-                      {pkg.images?.[0] ? (
-                        <img src={pkg.images[0]} alt={pkg.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      {pkg.images?.[0] || pkg.title.toLowerCase().includes("kerala") || pkg.title.toLowerCase().includes("ooty") ? (
+                        <img src={pkg.title.toLowerCase().includes("kerala") ? "/kerala-package.png" : pkg.title.toLowerCase().includes("ooty") ? "/ooty-package.png" : pkg.images[0] || "/kerala-package.png"} alt={pkg.title} onError={(e) => { e.currentTarget.src = "/placeholder.png"; }} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       ) : (
                         <div className="absolute inset-0 bg-gradient-sky opacity-60 flex items-center justify-center"><MapPin className="h-12 w-12 text-primary-foreground/60" /></div>
                       )}
@@ -197,8 +197,8 @@ export default function Index() {
                 <Link to={`/agencies/${agency.id}`} className="group block">
                   <div className="bg-card rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6 border border-border/50">
                     <div className="flex items-center gap-4 mb-4">
-                      {agency.logo_url ? (
-                        <img src={agency.logo_url} alt={agency.agency_name} className="w-14 h-14 rounded-xl object-cover shadow-sm" />
+                      {agency.logo_url || agency.agency_name.toLowerCase().includes("soaringx") ? (
+                        <img src={agency.logo_url || "/soaringx-logo.png"} alt={agency.agency_name} onError={(e) => { e.currentTarget.src = "/placeholder.png"; }} className="w-14 h-14 rounded-xl object-cover shadow-sm" />
                       ) : (
                         <div className="w-14 h-14 rounded-xl bg-gradient-hero flex items-center justify-center text-primary-foreground font-bold text-lg">
                           {agency.agency_name.charAt(0)}

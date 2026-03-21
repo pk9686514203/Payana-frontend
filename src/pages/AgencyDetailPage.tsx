@@ -33,8 +33,8 @@ export default function AgencyDetailPage() {
 
         <div className="bg-card rounded-2xl p-6 md:p-8 shadow-card mb-8 border border-border/50">
           <div className="flex flex-col md:flex-row items-start gap-6">
-            {agency.logo_url ? (
-              <img src={agency.logo_url} alt={agency.agency_name} className="w-20 h-20 rounded-2xl object-cover shadow-sm shrink-0" />
+            {agency.logo_url || agency.agency_name.toLowerCase().includes("soaringx") ? (
+              <img src={agency.logo_url || "/soaringx-logo.png"} alt={agency.agency_name} onError={(e) => { e.currentTarget.src = "/placeholder.png"; }} className="w-20 h-20 rounded-2xl object-cover shadow-sm shrink-0" />
             ) : (
               <div className="w-20 h-20 rounded-2xl bg-gradient-hero flex items-center justify-center text-primary-foreground font-bold text-2xl shrink-0">
                 {agency.agency_name.charAt(0)}
@@ -85,8 +85,8 @@ export default function AgencyDetailPage() {
               <Link key={pkg.id} to={`/packages/${pkg.id}`} className="group block">
                 <div className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 border border-border/50">
                   <div className="relative h-48 bg-muted overflow-hidden">
-                    {pkg.images?.[0] ? (
-                      <img src={pkg.images[0]} alt={pkg.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    {pkg.images?.[0] || pkg.title.toLowerCase().includes("kerala") || pkg.title.toLowerCase().includes("ooty") ? (
+                      <img src={pkg.title.toLowerCase().includes("kerala") ? "/kerala-package.png" : pkg.title.toLowerCase().includes("ooty") ? "/ooty-package.png" : pkg.images[0] || "/kerala-package.png"} alt={pkg.title} onError={(e) => { e.currentTarget.src = "/placeholder.png"; }} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-sky opacity-50" />
                     )}

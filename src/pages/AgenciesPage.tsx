@@ -39,8 +39,8 @@ export default function AgenciesPage() {
               <Link to={`/agencies/${agency.id}`} className="group block">
                 <div className="bg-card rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-300 p-6 border border-border/50">
                   <div className="flex items-center gap-4 mb-4">
-                    {agency.logo_url ? (
-                      <img src={agency.logo_url} alt={agency.agency_name} className="w-14 h-14 rounded-xl object-cover shadow-sm shrink-0" />
+                    {agency.logo_url || agency.agency_name.toLowerCase().includes("soaringx") ? (
+                      <img src={agency.logo_url || "/soaringx-logo.png"} alt={agency.agency_name} onError={(e) => { e.currentTarget.src = "/placeholder.png"; }} className="w-14 h-14 rounded-xl object-cover shadow-sm shrink-0" />
                     ) : (
                       <div className="w-14 h-14 rounded-xl bg-gradient-hero flex items-center justify-center text-primary-foreground font-bold text-lg shrink-0">
                         {agency.agency_name.charAt(0)}

@@ -54,11 +54,11 @@ export default function PackagesPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {sorted.map((pkg, i) => (
             <motion.div key={pkg.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-              <Link to={`/packages/${pkg.id}`} className="group block">
+              <Link to={`/packages/${pkg.id}`} state={{ package: { ...pkg, _id: pkg.id } }} className="group block">
                 <div className="bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 border border-border/50">
                   <div className="relative h-52 bg-muted overflow-hidden">
-                    {pkg.images?.[0] ? (
-                      <img src={pkg.images[0]} alt={pkg.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    {pkg.images?.[0] || pkg.title.toLowerCase().includes("kerala") || pkg.title.toLowerCase().includes("ooty") ? (
+                      <img src={pkg.title.toLowerCase().includes("kerala") ? "/kerala-package.png" : pkg.title.toLowerCase().includes("ooty") ? "/ooty-package.png" : pkg.images[0] || "/kerala-package.png"} alt={pkg.title} onError={(e) => { e.currentTarget.src = "/placeholder.png"; }} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-sky opacity-50 flex items-center justify-center"><MapPin className="h-12 w-12 text-primary-foreground/50" /></div>
                     )}

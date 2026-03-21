@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { MapPin, Phone, Mail, Instagram } from "lucide-react";
-import logo from "@/assets/payana-logo.png";
 
 export default function Footer() {
   return (
@@ -10,7 +9,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src={logo} alt="Payana Bookings" className="h-12 w-12 rounded-lg" />
+              <img src="/payana-logo.png" alt="Payana Bookings" onError={(e) => { e.currentTarget.src = "/placeholder.png"; }} className="h-12 w-12 rounded-lg" />
               <div>
                 <h3 className="text-xl font-bold">Payana Bookings</h3>
                 <p className="text-xs text-primary-foreground/60">Complete Travel Packages & Tourist Bus Bookings</p>

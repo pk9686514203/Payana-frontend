@@ -12,12 +12,19 @@ interface AuthContextType {
   roles: AppRole[];
   loading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null; user: Record<string, unknown> | null }>;
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function buildStoredUser(user: User) {
+  return {
+    ...user,
+    _id: user.id,
+  };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -31,11 +38,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        localStorage.setItem("user", JSON.stringify(buildStoredUser(session.user)));
         setTimeout(() => {
           fetchProfile(session.user.id);
           fetchRoles(session.user.id);
         }, 0);
       } else {
+        localStorage.removeItem("user");
         setProfile(null);
         setRoles([]);
       }
@@ -45,8 +54,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        localStorage.setItem("user", JSON.stringify(buildStoredUser(session.user)));
         fetchProfile(session.user.id);
         fetchRoles(session.user.id);
+      } else {
+        localStorage.removeItem("user");
       }
       setLoading(false);
     });
@@ -79,12 +91,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (data.user) {
+      const storedUser = buildStoredUser(data.user);
+      localStorage.setItem("user", JSON.stringify(storedUser));
+      return { error: null, user: storedUser };
+    }
+
+    return { error: error as Error | null, user: null };
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem("user");
     setSession(null);
     setUser(null);
     setProfile(null);
