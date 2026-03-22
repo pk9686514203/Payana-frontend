@@ -1,10 +1,9 @@
-const API_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
+const DEFAULT_PRODUCTION_API = "https://payana-website-1.onrender.com";
+
+const API_URL =
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") || DEFAULT_PRODUCTION_API;
 
 function getApiBaseUrl() {
-  if (!API_URL) {
-    throw new Error("VITE_API_URL is not defined");
-  }
-
   return API_URL;
 }
 
@@ -22,6 +21,14 @@ export async function fetchFromApi<T>(path: string): Promise<T> {
   }
 
   return response.json() as Promise<T>;
+}
+
+export function getAuthHeaders(token: string | null | undefined): HeadersInit {
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return headers;
 }
 
 export function resolveApiAssetUrl(path?: string | null) {

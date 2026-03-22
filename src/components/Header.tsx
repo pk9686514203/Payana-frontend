@@ -18,7 +18,6 @@ export default function Header() {
   const { user, roles, signOut, hasRole } = useAuth();
 
   const getDashboardLink = () => {
-    if (hasRole("admin")) return "/admin";
     if (hasRole("agent")) return "/agent-dashboard";
     if (hasRole("vehicle_owner")) return "/vehicle-owner-dashboard";
     return "/my-bookings";

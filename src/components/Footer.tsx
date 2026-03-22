@@ -58,9 +58,9 @@ export default function Footer() {
               {[
                 { name: "Register as Agency", path: "/signup?role=agency" },
                 { name: "List Your Vehicle", path: "/signup?role=vehicle-owner" },
-                { name: "Partner with Us", path: "#" },
-                { name: "Terms & Conditions", path: "#" },
-                { name: "Privacy Policy", path: "#" },
+                { name: "Partner with Us", path: "/signup?role=agency" },
+                { name: "Terms & Conditions", path: "/terms" },
+                { name: "Privacy Policy", path: "/privacy" },
               ].map((link, i) => (
                 <li key={i}>
                   <Link to={link.path} className="hover:text-primary-foreground transition-colors">

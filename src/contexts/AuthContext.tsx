@@ -1,13 +1,26 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
+import { buildApiUrl } from "@/lib/api";
+import {
+  AUTH_STORAGE_KEY,
+  TOKEN_STORAGE_KEY,
+  mapBackendRole,
+  type StoredAuthUser,
+  type StoredUserRole,
+} from "@/lib/auth";
 
-type AppRole = Database["public"]["Enums"]["app_role"];
+export type AppRole = StoredUserRole;
+
+export type AppUser = {
+  id: string;
+  email: string;
+  name: string;
+  phone?: string;
+  role: AppRole;
+};
 
 interface AuthContextType {
-  session: Session | null;
-  user: User | null;
+  user: AppUser | null;
+  token: string | null;
   profile: { full_name: string | null; phone: string | null; avatar_url: string | null } | null;
   roles: AppRole[];
   loading: boolean;
@@ -19,102 +32,142 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function buildStoredUser(user: User) {
+function toAppUser(raw: StoredAuthUser): AppUser {
   return {
-    ...user,
-    _id: user.id,
+    id: raw.id,
+    email: raw.email,
+    name: raw.name,
+    phone: raw.phone,
+    role: raw.role,
   };
 }
 
+function persistSession(token: string, apiUser: { _id?: string; id?: string; email: string; name?: string; phone?: string; role?: string }) {
+  const id = String(apiUser._id || apiUser.id || "");
+  const mapped: StoredAuthUser = {
+    id,
+    email: apiUser.email,
+    name: apiUser.name || apiUser.email.split("@")[0],
+    phone: apiUser.phone,
+    role: mapBackendRole(apiUser.role),
+  };
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(mapped));
+  localStorage.setItem("user", JSON.stringify({ ...mapped, _id: id }));
+  return toAppUser(mapped);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<AuthContextType["profile"]>(null);
-  const [roles, setRoles] = useState<AppRole[]>([]);
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        localStorage.setItem("user", JSON.stringify(buildStoredUser(session.user)));
-        setTimeout(() => {
-          fetchProfile(session.user.id);
-          fetchRoles(session.user.id);
-        }, 0);
-      } else {
-        localStorage.removeItem("user");
-        setProfile(null);
-        setRoles([]);
-      }
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        localStorage.setItem("user", JSON.stringify(buildStoredUser(session.user)));
-        fetchProfile(session.user.id);
-        fetchRoles(session.user.id);
-      } else {
-        localStorage.removeItem("user");
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+  const hydrate = useCallback(() => {
+    const t = localStorage.getItem(TOKEN_STORAGE_KEY);
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!t || !raw) {
+      setToken(null);
+      setUser(null);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(raw) as StoredAuthUser;
+      setToken(t);
+      setUser(toAppUser(parsed));
+    } catch {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+      localStorage.removeItem("user");
+      setToken(null);
+      setUser(null);
+    }
   }, []);
 
-  async function fetchProfile(userId: string) {
-    const { data } = await supabase.from("profiles").select("full_name, phone, avatar_url").eq("id", userId).single();
-    if (data) setProfile(data);
-  }
+  useEffect(() => {
+    hydrate();
+    setLoading(false);
+  }, [hydrate]);
 
-  async function fetchRoles(userId: string) {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    if (data) setRoles(data.map((r) => r.role));
-  }
+  const profile = user
+    ? { full_name: user.name, phone: user.phone ?? null, avatar_url: null as string | null }
+    : null;
+
+  const roles: AppRole[] = user ? [user.role] : [];
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    });
-    if (error) return { error: error as Error };
-    // Update profile with full_name
-    if (data.user) {
-      await supabase.from("profiles").update({ full_name: fullName }).eq("id", data.user.id);
+    try {
+      const res = await fetch(buildApiUrl("/api/auth/signup"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          name: fullName,
+          role: "customer",
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return { error: new Error(data.message || "Signup failed") };
+      }
+      if (data.token && data.user) {
+        const u = persistSession(data.token, data.user);
+        setToken(data.token);
+        setUser(u);
+      }
+      return { error: null };
+    } catch (e) {
+      return { error: e instanceof Error ? e : new Error("Signup failed") };
     }
-    return { error: null };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (data.user) {
-      const storedUser = buildStoredUser(data.user);
-      localStorage.setItem("user", JSON.stringify(storedUser));
-      return { error: null, user: storedUser };
+    try {
+      const res = await fetch(buildApiUrl("/api/auth/login"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return { error: new Error(data.message || "Login failed"), user: null };
+      }
+      if (!data.token || !data.user) {
+        return { error: new Error("Invalid server response"), user: null };
+      }
+      const u = persistSession(data.token, data.user);
+      setToken(data.token);
+      setUser(u);
+      return { error: null, user: { ...u, _id: u.id } as Record<string, unknown> };
+    } catch (e) {
+      return { error: e instanceof Error ? e : new Error("Login failed"), user: null };
     }
-
-    return { error: error as Error | null, user: null };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(AUTH_STORAGE_KEY);
     localStorage.removeItem("user");
-    setSession(null);
+    setToken(null);
     setUser(null);
-    setProfile(null);
-    setRoles([]);
   };
 
   const hasRole = (role: AppRole) => roles.includes(role);
 
   return (
-    <AuthContext.Provider value={{ session, user, profile, roles, loading, signUp, signIn, signOut, hasRole }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        profile,
+        roles,
+        loading,
+        signUp,
+        signIn,
+        signOut,
+        hasRole,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

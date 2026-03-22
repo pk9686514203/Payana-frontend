@@ -16,10 +16,11 @@ import AgencyDetailPage from "./pages/AgencyDetailPage";
 import TripRequestPage from "./pages/TripRequestPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
-import AdminDashboard from "./pages/AdminDashboard";
 import AgentDashboard from "./pages/AgentDashboard";
 import VehicleOwnerDashboard from "./pages/VehicleOwnerDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 
 const queryClient = new QueryClient();
 
@@ -41,8 +42,9 @@ const App = () => (
             <Route path="/trip-request" element={<TripRequestPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/my-bookings" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
             <Route path="/agent-dashboard" element={<ProtectedRoute requiredRole="agent"><AgentDashboard /></ProtectedRoute>} />
             <Route path="/vehicle-owner-dashboard" element={<ProtectedRoute requiredRole="vehicle_owner"><VehicleOwnerDashboard /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />

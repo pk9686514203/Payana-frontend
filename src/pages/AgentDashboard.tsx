@@ -1,62 +1,82 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Building2, Plus, ClipboardList, Loader2, Trash2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Building2, Plus, ClipboardList, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { buildApiUrl, getAuthHeaders } from "@/lib/api";
+
+type AgentDashboardData = {
+  agent: {
+    id: string;
+    agency_name: string;
+    status: string;
+    phone?: string;
+    email?: string;
+  };
+  packages: Array<{
+    id: string;
+    title: string;
+    price: number;
+    duration: string;
+    status: string;
+  }>;
+  bookings: Array<{
+    id: string;
+    customer_name: string;
+    customer_phone: string;
+    travel_date: string;
+    passengers: number;
+    packages?: { title?: string };
+  }>;
+};
 
 export default function AgentDashboard() {
-  const { user } = useAuth();
+  const { token } = useAuth();
   const qc = useQueryClient();
   const [tab, setTab] = useState<"packages" | "bookings" | "add">("packages");
 
-  const { data: agent } = useQuery({
-    queryKey: ["my-agent", user?.id],
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["agent-dashboard"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("agents").select("*").eq("user_id", user!.id).single();
-      if (error) throw error;
-      return data;
+      const res = await fetch(buildApiUrl("/api/me/agent-dashboard"), {
+        headers: getAuthHeaders(token),
+      });
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error("Failed to load dashboard");
+      return res.json() as Promise<AgentDashboardData>;
     },
-    enabled: !!user,
+    enabled: !!token,
   });
 
-  const { data: packages, isLoading: packagesLoading } = useQuery({
-    queryKey: ["my-packages", agent?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("packages").select("*").eq("agent_id", agent!.id).order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!agent,
-  });
-
-  const { data: bookings } = useQuery({
-    queryKey: ["agent-bookings", agent?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("*, packages!inner(title, agent_id)")
-        .eq("packages.agent_id", agent!.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!agent,
-  });
-
-  if (!agent) {
+  if (isLoading) {
     return (
       <Layout>
-        <div className="container mx-auto px-4 py-16 text-center">
-          <p className="text-muted-foreground">No agency profile found. Please register as an agent first.</p>
-          <RegisterAgentForm userId={user?.id || ""} />
+        <div className="flex justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </Layout>
     );
   }
+
+  if (error || !data) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-16 text-center space-y-4">
+          <p className="text-muted-foreground">
+            No agency profile found. Register as a travel agency to manage packages and bookings.
+          </p>
+          <Link to="/signup?role=agency">
+            <Button className="bg-gradient-warm text-primary-foreground rounded-xl">Register as Agency</Button>
+          </Link>
+        </div>
+      </Layout>
+    );
+  }
+
+  const { agent, packages, bookings } = data;
 
   return (
     <Layout>
@@ -71,7 +91,7 @@ export default function AgentDashboard() {
           </div>
         </div>
 
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
           {[
             { id: "packages" as const, label: "My Packages", icon: Building2 },
             { id: "bookings" as const, label: "Bookings", icon: ClipboardList },
@@ -79,8 +99,9 @@ export default function AgentDashboard() {
           ].map((t) => (
             <button
               key={t.id}
+              type="button"
               onClick={() => setTab(t.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                 tab === t.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
             >
@@ -91,13 +112,17 @@ export default function AgentDashboard() {
 
         {tab === "packages" && (
           <div className="space-y-3">
-            {packagesLoading && <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />}
             {packages?.length === 0 && <p className="text-center text-muted-foreground py-8">No packages yet. Add one!</p>}
             {packages?.map((pkg) => (
-              <div key={pkg.id} className="bg-card rounded-xl p-4 border border-border/50 shadow-sm flex justify-between items-center">
+              <div
+                key={pkg.id}
+                className="bg-card rounded-xl p-4 border border-border/50 shadow-sm flex justify-between items-center"
+              >
                 <div>
                   <p className="font-semibold text-foreground">{pkg.title}</p>
-                  <p className="text-sm text-muted-foreground">₹{pkg.price} • {pkg.duration} • Status: {pkg.status}</p>
+                  <p className="text-sm text-muted-foreground">
+                    ₹{pkg.price} • {pkg.duration} • Status: {pkg.status}
+                  </p>
                 </div>
               </div>
             ))}
@@ -110,47 +135,71 @@ export default function AgentDashboard() {
             {bookings?.map((b) => (
               <div key={b.id} className="bg-card rounded-xl p-4 border border-border/50 shadow-sm">
                 <p className="font-semibold text-foreground">{b.customer_name}</p>
-                <p className="text-sm text-muted-foreground">{b.packages?.title} • {new Date(b.travel_date).toLocaleDateString()} • {b.passengers} pax</p>
+                <p className="text-sm text-muted-foreground">
+                  {b.packages?.title} • {new Date(b.travel_date).toLocaleDateString()} • {b.passengers} pax
+                </p>
                 <p className="text-xs text-muted-foreground">📞 {b.customer_phone}</p>
               </div>
             ))}
           </div>
         )}
 
-        {tab === "add" && <AddPackageForm agentId={agent.id} onDone={() => { setTab("packages"); qc.invalidateQueries({ queryKey: ["my-packages"] }); }} />}
+        {tab === "add" && (
+          <AddPackageForm
+            onDone={() => {
+              setTab("packages");
+              qc.invalidateQueries({ queryKey: ["agent-dashboard"] });
+            }}
+          />
+        )}
       </div>
     </Layout>
   );
 }
 
-function AddPackageForm({ agentId, onDone }: { agentId: string; onDone: () => void }) {
+function AddPackageForm({ onDone }: { onDone: () => void }) {
+  const { token } = useAuth();
   const [form, setForm] = useState({ title: "", description: "", price: "", duration: "", locations: "", includes: "" });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || !form.price || !form.duration) { toast.error("Fill required fields"); return; }
+    if (!form.title || !form.price || !form.duration) {
+      toast.error("Fill required fields");
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.from("packages").insert({
-      agent_id: agentId,
-      title: form.title,
-      description: form.description,
-      price: Number(form.price),
-      duration: form.duration,
-      locations: form.locations.split(",").map((s) => s.trim()).filter(Boolean),
-      includes: form.includes.split(",").map((s) => s.trim()).filter(Boolean),
-      status: "pending",
-    });
-    setLoading(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Package submitted for approval!");
-    onDone();
+    try {
+      const res = await fetch(buildApiUrl("/api/me/packages"), {
+        method: "POST",
+        headers: getAuthHeaders(token),
+        body: JSON.stringify({
+          title: form.title,
+          description: form.description,
+          price: Number(form.price),
+          duration: form.duration,
+          locations: form.locations,
+          includes: form.includes,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || "Failed to submit");
+      toast.success("Package submitted for approval!");
+      onDone();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const update = (f: string, v: string) => setForm((p) => ({ ...p, [f]: v }));
 
   return (
-    <form onSubmit={handleSubmit} className="bg-card rounded-xl p-6 border border-border/50 shadow-sm space-y-4 max-w-lg">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-card rounded-xl p-6 border border-border/50 shadow-sm space-y-4 max-w-lg"
+    >
       <h3 className="font-bold text-foreground">Add New Package</h3>
       {[
         { label: "Title *", field: "title", placeholder: "Kerala Adventure Trip" },
@@ -161,64 +210,30 @@ function AddPackageForm({ agentId, onDone }: { agentId: string; onDone: () => vo
       ].map(({ label, field, placeholder, type }) => (
         <div key={field}>
           <label className="text-sm font-medium text-foreground mb-1 block">{label}</label>
-          <input type={type || "text"} placeholder={placeholder} value={form[field as keyof typeof form]} onChange={(e) => update(field, e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-secondary" />
+          <input
+            type={type || "text"}
+            placeholder={placeholder}
+            value={form[field as keyof typeof form]}
+            onChange={(e) => update(field, e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
+          />
         </div>
       ))}
       <div>
         <label className="text-sm font-medium text-foreground mb-1 block">Description</label>
-        <textarea rows={3} value={form.description} onChange={(e) => update("description", e.target.value)}
-          className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-secondary resize-none" />
+        <textarea
+          rows={3}
+          value={form.description}
+          onChange={(e) => update("description", e.target.value)}
+          className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
+        />
       </div>
-      <Button type="submit" disabled={loading} className="w-full bg-gradient-warm text-primary-foreground rounded-xl py-5 font-semibold">
+      <Button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-gradient-warm text-primary-foreground rounded-xl py-5 font-semibold"
+      >
         {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Submit for Approval
-      </Button>
-    </form>
-  );
-}
-
-function RegisterAgentForm({ userId }: { userId: string }) {
-  const qc = useQueryClient();
-  const [form, setForm] = useState({ agency_name: "", owner_name: "", phone: "", email: "", description: "" });
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.agency_name || !form.owner_name || !form.phone) { toast.error("Fill required fields"); return; }
-    setLoading(true);
-    const { error } = await supabase.from("agents").insert({ ...form, user_id: userId, status: "pending" });
-    setLoading(false);
-    if (error) { toast.error(error.message); return; }
-    // Add agent role
-    await supabase.from("user_roles").insert({ user_id: userId, role: "agent" as const });
-    toast.success("Agency registered! Awaiting admin approval.");
-    qc.invalidateQueries({ queryKey: ["my-agent"] });
-  };
-
-  const update = (f: string, v: string) => setForm((p) => ({ ...p, [f]: v }));
-
-  return (
-    <form onSubmit={handleSubmit} className="bg-card rounded-xl p-6 border border-border/50 shadow-sm space-y-4 max-w-lg mx-auto mt-8">
-      <h3 className="font-bold text-foreground text-lg">Register Your Agency</h3>
-      {[
-        { label: "Agency Name *", field: "agency_name", placeholder: "Your Travel Agency" },
-        { label: "Owner Name *", field: "owner_name", placeholder: "Your name" },
-        { label: "Phone *", field: "phone", placeholder: "+91 98765 43210" },
-        { label: "Email", field: "email", placeholder: "agency@email.com" },
-      ].map(({ label, field, placeholder }) => (
-        <div key={field}>
-          <label className="text-sm font-medium text-foreground mb-1 block">{label}</label>
-          <input type="text" placeholder={placeholder} value={form[field as keyof typeof form]} onChange={(e) => update(field, e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-secondary" />
-        </div>
-      ))}
-      <div>
-        <label className="text-sm font-medium text-foreground mb-1 block">Description</label>
-        <textarea rows={3} value={form.description} onChange={(e) => update("description", e.target.value)}
-          className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-secondary resize-none" />
-      </div>
-      <Button type="submit" disabled={loading} className="w-full bg-gradient-warm text-primary-foreground rounded-xl py-5 font-semibold">
-        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Register Agency
       </Button>
     </form>
   );

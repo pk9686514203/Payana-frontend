@@ -56,9 +56,9 @@ export function getSignupRoleFromParam(role: string | null): SignupRole {
 }
 
 export function mapSignupRoleToBackendRole(role: SignupRole) {
-  if (role === "agency") return "agent";
-  if (role === "vehicle_owner") return "operator";
-  return "user";
+  if (role === "agency") return "agency";
+  if (role === "vehicle_owner") return "owner";
+  return "customer";
 }
 
 export async function filesToDataUrls(files: File[]) {
@@ -77,8 +77,8 @@ export async function filesToDataUrls(files: File[]) {
 
 export function mapBackendRole(role?: string): StoredUserRole {
   if (role === "admin") return "admin";
-  if (role === "agent") return "agent";
-  if (role === "operator") return "vehicle_owner";
+  if (role === "agency" || role === "agent") return "agent";
+  if (role === "owner" || role === "operator") return "vehicle_owner";
   return "customer";
 }
 

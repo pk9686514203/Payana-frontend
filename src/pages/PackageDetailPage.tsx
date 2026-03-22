@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import { MapPin, CheckCircle, Clock, ArrowLeft, Phone, Mail, Instagram, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/Layout";
+import BookingModal from "@/components/BookingModal";
 import { usePackageById } from "@/hooks/usePackages";
+import { useAuth } from "@/contexts/AuthContext";
 
 type SelectedPackage = {
   _id: string;
@@ -210,15 +212,8 @@ export default function PackageDetailPage() {
                 </div>
               </div>
 
-              <Button onClick={handleBooking} disabled={isBooking} className="w-full bg-gradient-warm text-primary-foreground hover:opacity-90 rounded-xl py-6 text-base font-semibold shadow-sm">
-                {isBooking ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Booking...
-                  </span>
-                ) : (
-                  "Book Now"
-                )}
+              <Button onClick={openBooking} className="w-full bg-gradient-warm text-primary-foreground hover:opacity-90 rounded-xl py-6 text-base font-semibold shadow-sm min-h-12">
+                Book Now
               </Button>
 
               <div className="border-t border-border pt-5">
@@ -260,6 +255,20 @@ export default function PackageDetailPage() {
           </div>
         </div>
       </div>
+
+      {showBooking && selectedPackage && (
+        <BookingModal
+          type="package"
+          itemName={selectedPackage.title}
+          itemId={String(selectedPackage._id || selectedPackage.id)}
+          agencyName={selectedPackage.agents?.agency_name}
+          agencyPhone={selectedPackage.agents?.phone}
+          agencyEmail={selectedPackage.agents?.email}
+          agencyInstagram={selectedPackage.agents?.instagram}
+          priceHint={selectedPackage.price}
+          onClose={() => setShowBooking(false)}
+        />
+      )}
     </Layout>
   );
 }
